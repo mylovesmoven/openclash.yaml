@@ -1,0 +1,446 @@
+---
+mixed-port: 7890
+redir-port: 7892
+tproxy-port: 7895
+allow-lan: true
+bind-address: "*"
+mode: rule
+log-level: warning
+ipv6: true
+unified-delay: true
+tcp-concurrent: true
+profile:
+  store-selected: true
+  store-fake-ip: true
+geodata-mode: true
+geo-auto-update: true
+geo-update-interval: 24
+geox-url:
+  geoip: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat
+  geosite: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat
+  mmdb: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb
+sniffer:
+  enable: true
+  sniff:
+    TLS:
+      ports:
+      - 443
+      - 8443
+    HTTP:
+      ports:
+      - 80
+      - 8080-8880
+      override-destination: true
+    QUIC:
+      ports:
+      - 443
+      - 8443
+  skip-domain:
+  - Mijia Cloud
+  - dlg.io.mi.com
+  - "+.push.apple.com"
+  - "+.googlevideo.com"
+  - "+.douyin.com"
+  - "+.douyincdn.com"
+  - "+.douyinpic.com"
+  - "+.douyinstatic.com"
+  - "+.douyinliving.com"
+  - "+.amemv.com"
+  - "+.snssdk.com"
+  - "+.byteimg.com"
+  - "+.pstatp.com"
+  - "+.xiaohongshu.com"
+  - "+.xhscdn.com"
+  - "+.xhscdn.net"
+  - "+.xhslink.com"
+  - "+.xhsimg.com"
+tun:
+  enable: true
+  stack: mixed
+  mtu: 1492
+  dns-hijack:
+  - any:53
+  - tcp://any:53
+  auto-route: true
+  auto-detect-interface: true
+  strict-route: true
+proxies:
+- name: 自建节点-1
+  type: vless
+  server: <节点1_IPv4地址> # 提示：请替换为你的节点2 IPv4 服务器地址
+  port: 443
+  ip-version: ipv4
+  udp: true
+  uuid: <你的UUID> # 提示：请替换为节点2的 UUID
+  flow: xtls-rprx-vision
+  packet-encoding: xudp
+  encryption: none
+  network: tcp
+  tls: true
+  servername: www.microsoft.com
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  reality-opts:
+    public-key: <节点2_公钥> # 提示：请替换为节点2的 Reality Public Key
+    short-id: <节点2_Short_ID> # 提示：请替换为节点2的 Reality Short ID
+    spider-x: "/GuP1rLvY
+- name: 自建节点-1-IPv6
+  type: vless
+  server: "<节点1_IPv6地址>" # 提示：请替换为你的节点1 IPv6 服务器地址，IPv6地址建议加引号
+  port: 443
+  ip-version: ipv6
+  udp: true
+  uuid: <你的UUID> # 提示：同上
+  flow: xtls-rprx-vision
+  packet-encoding: xudp
+  encryption: none
+  network: tcp
+  tls: true
+  servername: www.microsoft.com
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  reality-opts:
+    public-key: <节点1_公钥> # 提示：同上
+    short-id: <节点1_Short_ID> # 提示：同上
+- name: 自建节点-2
+  type: vless
+  server: <节点2_IPv4地址> # 提示：请替换为你的节点2 IPv4 服务器地址
+  port: 443
+  ip-version: ipv4
+  udp: true
+  uuid: <你的UUID> # 提示：请替换为节点2的 UUID
+  flow: xtls-rprx-vision
+  packet-encoding: xudp
+  encryption: none
+  network: tcp
+  tls: true
+  servername: www.microsoft.com
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  reality-opts:
+    public-key: <节点2_公钥> # 提示：请替换为节点2的 Reality Public Key
+    short-id: <节点2_Short_ID> # 提示：请替换为节点2的 Reality Short ID
+- name: 自建节点-2-IPv6
+  type: vless
+  server: "<节点2_IPv6地址>" # 提示：请替换为你的节点2 IPv6 服务器地址，IPv6地址建议加引号
+  port: 443
+  ip-version: ipv6
+  udp: true
+  uuid: <你的UUID> # 提示：同上
+  flow: xtls-rprx-vision
+  packet-encoding: xudp
+  encryption: none
+  network: tcp
+  tls: true
+  servername: www.microsoft.com
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  reality-opts:
+    public-key: <节点2_公钥> # 提示：同上
+    short-id: <节点2_Short_ID> # 提示：同上
+proxy-groups:
+- name: PROXY
+  type: select
+  proxies:
+  - AUTO
+  - Vless-HK
+  - 自建节点-1-IPv6
+  - 自建节点-2
+  - 自建节点-2-IPv6
+  - DIRECT
+- name: AUTO
+  type: url-test
+  proxies:
+  - Vless-HK
+  - 自建节点-1-IPv6
+  - 自建节点-2
+  - 自建节点-2-IPv6
+  url: https://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  lazy: true
+dns:
+  enable: true
+  listen: 0.0.0.0:1053
+  cache-algorithm: arc
+  ipv6: false
+  prefer-h3: false
+  use-hosts: true
+  use-system-hosts: true
+  respect-rules: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-range6: fdfe:dcba:9876::1/64
+  fake-ip-filter:
+  - "*.lan"
+  - "*.local"
+  - "+.localdomain"
+  - localhost.ptlogin2.qq.com
+  - time.windows.com
+  - time.apple.com
+  - time.android.com
+  - "+.xn--ngstr-lra8j.com"
+  - "+.ntp.org.cn"
+  - "+.pool.ntp.org"
+  - "+.doubao.com"
+  - "+.volces.com"
+  - "+.volcengine.com"
+  - "+.douyin.com"
+  - "+.douyincdn.com"
+  - "+.douyinpic.com"
+  - "+.douyinstatic.com"
+  - "+.douyinliving.com"
+  - "+.amemv.com"
+  - "+.snssdk.com"
+  - "+.byteimg.com"
+  - "+.pstatp.com"
+  - "+.ixigua.com"
+  - "+.toutiao.com"
+  - "+.xiaohongshu.com"
+  - "+.xhscdn.com"
+  - "+.xhscdn.net"
+  - "+.xhslink.com"
+  - "+.xhsimg.com"
+  default-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  - 2400:3200::1
+  nameserver-policy:
+    geosite:private,cn,geolocation-cn,apple-cn,microsoft@cn,steam@cn: # 优化：补齐 geolocation-cn
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.doubao.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.volces.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.volcengine.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.douyin.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.douyincdn.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.douyinpic.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.douyinstatic.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.douyinliving.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.amemv.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.snssdk.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.byteimg.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.pstatp.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.ixigua.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.toutiao.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.xiaohongshu.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.xhscdn.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.xhscdn.net":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.xhslink.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.xhsimg.com":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.cn":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.中国":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.公司":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.网络":
+    - 223.5.5.5
+    - 119.29.29.29
+    - 2400:3200::1
+    "+.google.com":
+    - https://1.1.1.1/dns-query#PROXY
+    - https://dns.google/dns-query#PROXY
+    "+.googleapis.com":
+    - https://1.1.1.1/dns-query#PROXY
+    - https://dns.google/dns-query#PROXY
+    "+.googleapis.cn":
+    - https://1.1.1.1/dns-query#PROXY
+    - https://dns.google/dns-query#PROXY
+    "+.gstatic.com":
+    - https://1.1.1.1/dns-query#PROXY
+    - https://dns.google/dns-query#PROXY
+    "+.gvt1.com":
+    - https://1.1.1.1/dns-query#PROXY
+    - https://dns.google/dns-query#PROXY
+    "+.gvt2.com":
+    - https://1.1.1.1/dns-query#PROXY
+    - https://dns.google/dns-query#PROXY
+    "+.gvt3.com":
+    - https://1.1.1.1/dns-query#PROXY
+    - https://dns.google/dns-query#PROXY
+    "+.googleusercontent.com":
+    - https://1.1.1.1/dns-query#PROXY
+    - https://dns.google/dns-query#PROXY
+    "+.ggpht.com":
+    - https://1.1.1.1/dns-query#PROXY
+    - https://dns.google/dns-query#PROXY
+    "+.android.com":
+    - https://1.1.1.1/dns-query#PROXY
+    - https://dns.google/dns-query#PROXY
+    "+.xn--ngstr-lra8j.com":
+    - https://1.1.1.1/dns-query#PROXY
+    - https://dns.google/dns-query#PROXY
+    "+.openai.com":
+    - https://1.1.1.1/dns-query#PROXY
+    - https://dns.google/dns-query#PROXY
+    "+.chatgpt.com":
+    - https://1.1.1.1/dns-query#PROXY
+    - https://dns.google/dns-query#PROXY
+    "+.anthropic.com":
+    - https://1.1.1.1/dns-query#PROXY
+    - https://dns.google/dns-query#PROXY
+    "+.claude.ai":
+    - https://1.1.1.1/dns-query#PROXY
+    - https://dns.google/dns-query#PROXY
+    geosite:geolocation-!cn:
+    - https://1.1.1.1/dns-query#PROXY
+    - https://dns.google/dns-query#PROXY
+  nameserver:
+  - https://1.1.1.1/dns-query#PROXY
+  - https://1.0.0.1/dns-query#PROXY
+  - https://dns.google/dns-query#PROXY
+  fallback:
+  - https://1.1.1.1/dns-query#PROXY
+  - https://dns.google/dns-query#PROXY
+  proxy-server-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  direct-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  - https://dns.alidns.com/dns-query
+  - https://doh.pub/dns-query
+  direct-nameserver-follow-policy: true
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    ipcidr:
+    - 240.0.0.0/4
+rules:
+- AND,((NETWORK,UDP),(DST-PORT,443)),REJECT
+- GEOSITE,private,DIRECT
+- DOMAIN-SUFFIX,doubao.com,DIRECT
+- DOMAIN-SUFFIX,volces.com,DIRECT
+- DOMAIN-SUFFIX,volcengine.com,DIRECT
+- DOMAIN-SUFFIX,douyin.com,DIRECT
+- DOMAIN-SUFFIX,douyincdn.com,DIRECT
+- DOMAIN-SUFFIX,douyinpic.com,DIRECT
+- DOMAIN-SUFFIX,douyinstatic.com,DIRECT
+- DOMAIN-SUFFIX,douyinliving.com,DIRECT
+- DOMAIN-SUFFIX,amemv.com,DIRECT
+- DOMAIN-SUFFIX,snssdk.com,DIRECT
+- DOMAIN-SUFFIX,byteimg.com,DIRECT
+- DOMAIN-SUFFIX,pstatp.com,DIRECT
+- DOMAIN-SUFFIX,ixigua.com,DIRECT
+- DOMAIN-SUFFIX,toutiao.com,DIRECT
+- DOMAIN-SUFFIX,bytedance.com,DIRECT
+- DOMAIN-SUFFIX,xiaohongshu.com,DIRECT
+- DOMAIN-SUFFIX,xhscdn.com,DIRECT
+- DOMAIN-SUFFIX,xhscdn.net,DIRECT
+- DOMAIN-SUFFIX,xhslink.com,DIRECT
+- DOMAIN-SUFFIX,xhsimg.com,DIRECT
+- IP-CIDR6,::1/128,DIRECT,no-resolve
+- IP-CIDR6,fc00::/7,DIRECT,no-resolve
+- IP-CIDR6,fe80::/10,DIRECT,no-resolve
+- IP-CIDR6,ff00::/8,DIRECT,no-resolve     # 优化：放行 IPv6 组播
+- IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+- IP-CIDR,169.254.0.0/16,DIRECT,no-resolve
+- IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+- IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+- IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+- IP-CIDR,100.64.0.0/10,DIRECT,no-resolve
+- IP-CIDR,224.0.0.0/4,DIRECT,no-resolve
+- IP-CIDR,240.0.0.0/4,DIRECT,no-resolve
+- DOMAIN-SUFFIX,openai.com,PROXY
+- DOMAIN-SUFFIX,chatgpt.com,PROXY
+- DOMAIN-SUFFIX,anthropic.com,PROXY
+- DOMAIN-SUFFIX,claude.ai,PROXY
+- DOMAIN-SUFFIX,google.com,PROXY
+- DOMAIN-SUFFIX,googleapis.com,PROXY
+- DOMAIN-SUFFIX,googleapis.cn,PROXY
+- DOMAIN-SUFFIX,gstatic.com,PROXY
+- DOMAIN-SUFFIX,gvt1.com,PROXY
+- DOMAIN-SUFFIX,gvt2.com,PROXY
+- DOMAIN-SUFFIX,gvt3.com,PROXY
+- DOMAIN-SUFFIX,googleusercontent.com,PROXY
+- DOMAIN-SUFFIX,ggpht.com,PROXY
+- DOMAIN-SUFFIX,android.com,PROXY
+- DOMAIN-SUFFIX,android.clients.google.com,PROXY
+- DOMAIN-SUFFIX,android.googleapis.com,PROXY
+- DOMAIN-SUFFIX,dl.google.com,PROXY
+- DOMAIN-SUFFIX,dl-ssl.google.com,PROXY
+- DOMAIN-SUFFIX,play.googleapis.com,PROXY
+- DOMAIN-SUFFIX,market.android.com,PROXY
+- DOMAIN-SUFFIX,xn--ngstr-lra8j.com,PROXY
+- GEOSITE,google,PROXY
+- GEOSITE,youtube,PROXY
+- GEOSITE,telegram,PROXY
+- GEOSITE,github,PROXY
+- GEOSITE,category-games@cn,DIRECT
+- GEOSITE,apple-cn,DIRECT
+- GEOSITE,microsoft@cn,DIRECT
+- GEOSITE,steam@cn,DIRECT
+- DOMAIN-SUFFIX,cn,DIRECT
+- DOMAIN-SUFFIX,中国,DIRECT
+- DOMAIN-SUFFIX,公司,DIRECT
+- DOMAIN-SUFFIX,网络,DIRECT
+- GEOSITE,cn,DIRECT
+- GEOSITE,geolocation-cn,DIRECT           # 优化：补齐 geolocation-cn 提高直连命中率
+- GEOIP,CN,DIRECT
+- GEOSITE,geolocation-!cn,PROXY
+- MATCH,PROXY
