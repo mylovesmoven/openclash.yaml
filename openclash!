@@ -1,0 +1,163 @@
+---
+mixed-port: 7890
+redir-port: 7892
+tproxy-port: 7895
+allow-lan: true
+bind-address: "*"
+mode: rule
+log-level: warning
+ipv6: true
+unified-delay: true
+tcp-concurrent: true
+profile:
+  store-selected: true
+  store-fake-ip: true
+geodata-mode: true
+geo-auto-update: true
+geo-update-interval: 24
+geox-url:
+  geoip: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat
+  geosite: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat
+  mmdb: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb
+
+sniffer:
+  enable: true
+  sniff:
+    TLS:
+      ports: [443, 8443]
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+    QUIC:
+      ports: [443, 8443]
+  skip-domain:
+    - Mijia Cloud
+    - dlg.io.mi.com
+    - "+.apple.com"
+
+tun:
+  enable: true
+  stack: mixed
+  mtu: 1492
+  dns-hijack:
+    - any:53
+    - tcp://any:53
+  auto-route: true
+  auto-detect-interface: true
+  strict-route: true
+
+proxies:
+  - {name: 直连, type: direct}
+  - {name: 拒绝, type: reject}
+  - name: "代理名称"
+    type: vless
+    server: 主机地址
+    port: 端口
+    uuid: 757d514a-8efb-4bb9-****-***********
+    network: tcp
+    tls: true
+    udp: true
+    servername: www.amazon.com
+    client-fingerprint: chrome
+    # flow: xtls-rprx-vision # 如果你的服务端开启了vision流控，请取消此行的注释
+    reality-opts:
+      public-key: you_key
+      short-id: you _id
+    #  spider-x: "/GuP1rLvYTunhSpf"
+
+  # 暂且屏蔽的链式代理，保留在此处备用
+  # - name: "Socks5-链式代理"
+  #   type: socks5
+  #   server: 128.1.12.34
+  #   port: 1918
+  #   username: 491139cfa9c9
+  #   password: wjarzt8gk7c3u9fhidj9
+  #   udp: true
+  #   dialer-proxy: "Vless-HK"
+
+proxy-groups:
+  - name: PROXY
+    type: select
+    proxies:
+      - AUTO
+      - 代理名称
+  #    - Socks5-链式代理
+      - DIRECT
+  - name: AUTO
+    type: url-test
+    proxies:
+      - 代理名称
+  #    - Socks5-链式代理
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+    lazy: true
+
+dns:
+  enable: true
+  listen: 0.0.0.0:1053
+  cache-algorithm: arc
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - "*.lan"
+    - "*.local"
+    - "+.localdomain"
+    - time.windows.com
+    - time.apple.com
+    - time.android.com
+    - "+.pool.ntp.org"
+  
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  
+  nameserver:
+    - https://1.1.1.1/dns-query
+    - https://8.8.8.8/dns-query
+  
+
+  nameserver-policy:
+    "geosite:cn,private,geolocation-cn,apple-cn,microsoft@cn,steam@cn":
+      - 223.5.5.5
+      - 119.29.29.29
+    "+.douyin.com": [223.5.5.5, 119.29.29.29]
+    "+.douyincdn.com": [223.5.5.5, 119.29.29.29]
+    "+.douyinpic.com": [223.5.5.5, 119.29.29.29]
+    "+.amemv.com": [223.5.5.5, 119.29.29.29]
+    "+.xiaohongshu.com": [223.5.5.5, 119.29.29.29]
+    "+.xhscdn.com": [223.5.5.5, 119.29.29.29]
+
+
+rules:
+  # 1. 拦截 QUIC 防止浏览器绕过代理
+  - AND,((NETWORK,UDP),(DST-PORT,443)),REJECT
+  
+  - GEOSITE,private,DIRECT
+  - IP-CIDR6,::1/128,DIRECT,no-resolve
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve # 【优化点2】：补全了常用的 B类私网 IP，防止反向解析泄露
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  
+  # 3. 明确指配的域名代理/直连
+  - GEOSITE,google,PROXY
+  - GEOSITE,youtube,PROXY
+  - GEOSITE,telegram,PROXY
+  - GEOSITE,github,PROXY
+  - DOMAIN-SUFFIX,openai.com,PROXY
+  - DOMAIN-SUFFIX,chatgpt.com,PROXY
+  - GEOSITE,apple-cn,DIRECT
+  - GEOSITE,microsoft@cn,DIRECT
+  - GEOSITE,steam@cn,DIRECT
+  - DOMAIN-SUFFIX,cn,DIRECT
+  
+  # 4. 关键修复：国外域名必须在 GEOIP 之前被拦截并代理！
+  - GEOSITE,geolocation-!cn,PROXY
+  
+  - GEOSITE,cn,DIRECT
+  
+  - GEOIP,CN,DIRECT
+  
+  - MATCH,PROXY
