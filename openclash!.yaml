@@ -138,7 +138,7 @@ rules:
   - IP-CIDR6,::1/128,DIRECT,no-resolve
   - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
   - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
-  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve # 【优化点2】：补全了常用的 B类私网 IP，防止反向解析泄露
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
   - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
   
   # 3. 明确指配的域名代理/直连
@@ -153,7 +153,7 @@ rules:
   - GEOSITE,steam@cn,DIRECT
   - DOMAIN-SUFFIX,cn,DIRECT
   
-  # 4. 关键修复：国外域名必须在 GEOIP 之前被拦截并代理！
+  # 4. 国外域名必须在 GEOIP 之前被拦截并代理！
   - GEOSITE,geolocation-!cn,PROXY
   
   - GEOSITE,cn,DIRECT
